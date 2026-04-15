@@ -2,7 +2,7 @@
 
 Welcome to the official hackathon repository by [GDG,UCE-OU].
 This repository serves as the starting point for all participating teams.
-
+Title of your repository shall be : team-(your team name)
 
 ## Team Details
 
