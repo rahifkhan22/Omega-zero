@@ -1,142 +1,188 @@
 import React, { useState } from 'react';
+import { createIssue } from '../services/api';
+import MapView from '../components/MapView';
 
-const CATEGORIES = [
-  'Electrical',
-  'Plumbing',
-  'Furniture',
-  'Cleaning',
-  'Network',
-  'Security',
-  'Other'
-];
-
-const LOCATIONS = [
-  'Main Gate',
-  'Science Block - 1st Floor',
-  'Science Block - 2nd Floor',
-  'Science Block - 3rd Floor',
-  'Arts Building - Room 101',
-  'Arts Building - Room 201',
-  'Arts Building - Room 301',
-  'Central Library - Ground Floor',
-  'Central Library - 1st Floor',
-  'Central Library - Basement',
-  'Lecture Hall 1',
-  'Lecture Hall 2',
-  'Computer Lab',
-  'Hostel Block A - Room 101',
-  'Hostel Block A - Common Room',
-  'Hostel Block B - Room 201',
-  'Cafeteria',
-  'Administrative Block',
-  'Sports Ground',
-  'Parking Area'
-];
-
+/**
+ * ReportIssue - Form for users to report a new civic issue with location and image upload.
+ */
 const ReportIssue = () => {
   const [formData, setFormData] = useState({
-    category: '',
+    title: '',
     description: '',
-    location: ''
+    category: 'road',
+    lat: '',
+    lng: '',
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [image, setImage] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  const categories = ['road', 'water', 'electricity', 'sanitation', 'public-safety', 'other'];
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = (e) => {
+    if (e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
+  const handleGetLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setFormData({
+            ...formData,
+            lat: position.coords.latitude.toString(),
+            lng: position.coords.longitude.toString(),
+          });
+        },
+        (err) => setError('Failed to get location. Please enter manually.')
+      );
+    } else {
+      setError('Geolocation is not supported by your browser.');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-      setFormData({ category: '', description: '', location: '' });
-      setTimeout(() => setSubmitted(false), 3000);
-    }, 1000);
+    setSubmitting(true);
+    setError('');
+
+    try {
+      await createIssue({ ...formData, image });
+      setSuccess(true);
+      setFormData({ title: '', description: '', category: 'road', lat: '', lng: '' });
+      setImage(null);
+    } catch (err) {
+      setError(err.message || 'Failed to submit issue.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Report an Issue</h1>
-          <p className="text-gray-500 mb-6">Submit a new issue report for the campus</p>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">Report an Issue</h1>
+      <p className="text-gray-500 mb-8">Help improve your city by reporting civic problems.</p>
 
-          {submitted && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-green-600 font-medium">Issue reported successfully!</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">Select a category</option>
-                {CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                required
-                rows={4}
-                placeholder="Describe the issue in detail..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-                Location *
-              </label>
-              <select
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              >
-                <option value="">Select a location</option>
-                {LOCATIONS.map(loc => (
-                  <option key={loc} value={loc}>{loc}</option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Report'}
-            </button>
-          </form>
+      {success && (
+        <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6">
+          ✅ Issue reported successfully! Thank you for contributing.
         </div>
-      </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">{error}</div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Issue Title</label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            value={formData.title}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+            placeholder="e.g., Pothole on Main Street"
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={4}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none resize-none"
+            placeholder="Describe the issue in detail..."
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="lat" className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+            <input
+              id="lat"
+              name="lat"
+              type="number"
+              step="any"
+              value={formData.lat}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+              placeholder="17.3850"
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="lng" className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+            <input
+              id="lng"
+              name="lng"
+              type="number"
+              step="any"
+              value={formData.lng}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+              placeholder="78.4867"
+              required
+            />
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGetLocation}
+          className="text-primary-600 hover:text-primary-700 text-sm font-medium underline"
+        >
+          📍 Use my current location
+        </button>
+
+        <div>
+          <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">Upload Image</label>
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition-colors font-medium disabled:opacity-50"
+        >
+          {submitting ? 'Submitting...' : 'Submit Report'}
+        </button>
+      </form>
     </div>
   );
 };
