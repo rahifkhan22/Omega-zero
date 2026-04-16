@@ -9,10 +9,19 @@ import 'leaflet/dist/leaflet.css';
  * @param {Array} props.center - [lat, lng] center of the map.
  * @param {number} props.zoom - Initial zoom level.
  */
-const MapView = ({ issues = [], center = [17.3850, 78.4867], zoom = 13 }) => {
+const MapView = ({ issues = [], center = [17.3850, 78.4867], zoom = 13, className = "h-96", interactive = true }) => {
   return (
-    <div className="w-full h-96 rounded-xl overflow-hidden shadow-md">
-      <MapContainer center={center} zoom={zoom} className="w-full h-full">
+    <div className={`w-full ${className} rounded-xl overflow-hidden shadow-md relative z-0`}>
+      <MapContainer 
+        center={center} 
+        zoom={zoom} 
+        className="w-full h-full"
+        zoomControl={interactive}
+        scrollWheelZoom={interactive}
+        dragging={interactive}
+        touchZoom={interactive}
+        doubleClickZoom={interactive}
+      >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
