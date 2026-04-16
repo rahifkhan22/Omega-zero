@@ -6,6 +6,7 @@ import ReportIssue from './pages/ReportIssue';
 import DashboardUser from './pages/DashboardUser';
 import DashboardSupervisor from './pages/DashboardSupervisor';
 import DashboardAdmin from './pages/DashboardAdmin';
+import DemoModules from './pages/DemoModules';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/dashboard/user" element={<DashboardUser />} />
           <Route path="/dashboard/supervisor" element={<DashboardSupervisor />} />
           <Route path="/dashboard/admin" element={<DashboardAdmin />} />
+          <Route path="/demo" element={<DemoModules />} />
         </Routes>
       </main>
     </Router>

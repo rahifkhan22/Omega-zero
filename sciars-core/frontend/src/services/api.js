@@ -29,10 +29,11 @@ export const createIssue = async (issueData) => {
 
 /**
  * Fetch all issues.
+ * @param {string} role - User role (e.g., 'admin')
  * @returns {Array} List of issue objects.
  */
-export const fetchIssues = async () => {
-  const response = await api.get('/issues');
+export const fetchIssues = async (role = 'admin') => {
+  const response = await api.get(`/issues?role=${role}`);
   return response.data;
 };
 
