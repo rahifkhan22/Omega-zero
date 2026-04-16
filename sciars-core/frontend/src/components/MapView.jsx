@@ -41,3 +41,4 @@ const MapView = ({ issues = [], center = [17.3850, 78.4867], zoom = 13, classNam
 };
 
 export default MapView;
+

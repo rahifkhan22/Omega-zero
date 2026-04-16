@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 
 const NavbarUser = () => {
   const location = useLocation();
@@ -40,6 +41,7 @@ const NavbarUser = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            <NotificationBell userId="user1@gmail.com" />
             <button 
               onClick={() => navigate('/')}
               className="p-2 text-gray-500 hover:text-red-600 transition-colors" 
