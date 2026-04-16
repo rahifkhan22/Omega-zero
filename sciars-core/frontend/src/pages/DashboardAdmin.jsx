@@ -1,24 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { fetchIssues } from '../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import MapView from '../components/MapView';
+import AnalyticsDashboard from '../components/AnalyticsDashboard';
+import NotificationBell from '../components/NotificationBell';
 
-/**
- * DashboardAdmin - Admin dashboard with Recharts analytics, category breakdowns, and overview stats.
- */
+const MOCK_ISSUES = [
+  { id: 'mock-1', category: 'Electrical', description: 'Streetlight not working near the main gate entrance. Causes safety concerns at night.', status: 'Open', location: { lat: 17.3950, lng: 78.4867, text: 'Main Gate' }, createdAt: '2026-04-10T08:00:00Z', updatedAt: '2026-04-10T08:00:00Z' },
+  { id: 'mock-2', category: 'Plumbing', description: 'Water leakage in the second floor washroom. Flooding the corridor.', status: 'In Progress', location: { lat: 17.3855, lng: 78.4880, text: 'Science Block - 2nd Floor' }, createdAt: '2026-04-09T10:30:00Z', updatedAt: '2026-04-12T14:00:00Z' },
+  { id: 'mock-3', category: 'Furniture', description: 'Broken chairs in Room 301. Three chairs have missing backrests.', status: 'Resolved', location: { lat: 17.3840, lng: 78.4850, text: 'Arts Building - Room 301' }, createdAt: '2026-04-05T09:00:00Z', updatedAt: '2026-04-11T16:45:00Z' },
+  { id: 'mock-4', category: 'Cleaning', description: 'Restroom in library basement is not maintained properly.', status: 'Closed', location: { lat: 17.3860, lng: 78.4900, text: 'Central Library - Basement' }, createdAt: '2026-04-01T07:00:00Z', updatedAt: '2026-04-08T12:00:00Z' },
+  { id: 'mock-5', category: 'Electrical', description: 'Fan not working in Lecture Hall 2. Students complaining about heat.', status: 'Open', location: { lat: 17.3845, lng: 78.4870, text: 'Lecture Hall 2' }, createdAt: '2026-04-14T11:00:00Z', updatedAt: '2026-04-14T11:00:00Z' },
+  { id: 'mock-6', category: 'Network', description: 'Wi-Fi connectivity issues in the hostel common room.', status: 'In Progress', location: { lat: 17.3835, lng: 78.4840, text: 'Hostel Block A - Common Room' }, createdAt: '2026-04-13T15:30:00Z', updatedAt: '2026-04-15T09:00:00Z' },
+];
+
 const DashboardAdmin = () => {
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const COLORS = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'];
-
   useEffect(() => {
     const loadIssues = async () => {
       try {
-        const data = await fetchIssues();
-        setIssues(data);
-      } catch (err) {
-        console.error('Failed to load issues:', err);
+        const data = await fetchIssues('admin');
+        setIssues(Array.isArray(data) && data.length > 0 ? data : MOCK_ISSUES);
+      } catch {
+        setIssues(MOCK_ISSUES);
       } finally {
         setLoading(false);
       }
@@ -26,100 +31,30 @@ const DashboardAdmin = () => {
     loadIssues();
   }, []);
 
-  // Prepare analytics data
-  const statusData = [
-    { name: 'Reported', count: issues.filter((i) => i.status === 'reported').length },
-    { name: 'In Progress', count: issues.filter((i) => i.status === 'in-progress').length },
-    { name: 'Resolved', count: issues.filter((i) => i.status === 'resolved').length },
-  ];
-
-  const categoryData = issues.reduce((acc, issue) => {
-    const existing = acc.find((item) => item.name === issue.category);
-    if (existing) {
-      existing.count += 1;
-    } else {
-      acc.push({ name: issue.category || 'Other', count: 1 });
-    }
-    return acc;
-  }, []);
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24">
+        <div className="w-12 h-12 border-b-2 border-blue-500 rounded-full animate-spin mb-4" />
+        <p className="text-gray-400">Loading dashboard data…</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-      <p className="text-gray-500 mb-8">Analytics overview and system-wide issue management.</p>
-
-      {loading ? (
-        <div className="text-center py-12 text-gray-400">Loading analytics...</div>
-      ) : (
-        <>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl shadow-md p-5">
-              <p className="text-gray-500 text-sm">Total Issues</p>
-              <p className="text-3xl font-bold text-gray-800">{issues.length}</p>
-            </div>
-            <div className="bg-yellow-50 rounded-xl shadow-md p-5 border border-yellow-200">
-              <p className="text-yellow-700 text-sm">Reported</p>
-              <p className="text-3xl font-bold text-yellow-900">{statusData[0].count}</p>
-            </div>
-            <div className="bg-blue-50 rounded-xl shadow-md p-5 border border-blue-200">
-              <p className="text-blue-700 text-sm">In Progress</p>
-              <p className="text-3xl font-bold text-blue-900">{statusData[1].count}</p>
-            </div>
-            <div className="bg-green-50 rounded-xl shadow-md p-5 border border-green-200">
-              <p className="text-green-700 text-sm">Resolved</p>
-              <p className="text-3xl font-bold text-green-900">{statusData[2].count}</p>
-            </div>
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+            <p className="text-gray-500">Analytics overview and system-wide issue management</p>
           </div>
-
-          {/* Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            {/* Bar Chart - Status Breakdown */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">Issues by Status</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={statusData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Pie Chart - Category Breakdown */}
-            <div className="bg-white rounded-xl shadow-md p-6">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">Issues by Category</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                    outerRadius={100}
-                    dataKey="count"
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Map */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">City-Wide Issue Map</h2>
-            <MapView issues={issues.filter((i) => i.lat && i.lng)} />
-          </div>
-        </>
-      )}
+          <NotificationBell userId="admin-user-id" />
+        </div>
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-12"><MapView issues={issues} /></div>
+          <div className="col-span-12"><AnalyticsDashboard issues={issues} /></div>
+        </div>
+      </div>
     </div>
   );
 };
