@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import NotificationBell from './NotificationBell';
 
@@ -6,6 +6,17 @@ const NavbarUser = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const userEmail = useMemo(() => {
+    try {
+      const session = localStorage.getItem('session_user');
+      if (session) {
+        const data = JSON.parse(session);
+        return data.email || 'user@campus.edu';
+      }
+    } catch {}
+    return 'user@campus.edu';
+  }, []);
 
   const isActive = (path) => location.pathname === path;
 
@@ -41,7 +52,7 @@ const NavbarUser = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <NotificationBell userId="user1@gmail.com" />
+            <NotificationBell userId={userEmail} />
             <button 
               onClick={() => navigate('/')}
               className="p-2 text-gray-500 hover:text-red-600 transition-colors" 

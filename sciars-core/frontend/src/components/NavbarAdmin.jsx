@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import NotificationBell from './NotificationBell';
+import AdminNotificationBell from './AdminNotificationBell';
 import { getIssues } from '../services/api';
 
 const NavbarAdmin = () => {
@@ -10,6 +10,17 @@ const NavbarAdmin = () => {
   const [usersDropdown, setUsersDropdown] = useState(false);
   const [userStats, setUserStats] = useState({ totalUsers: 0, topUsers: [], areaBreakdown: [] });
   const dropdownRef = useRef(null);
+
+  const adminEmail = useMemo(() => {
+    try {
+      const session = localStorage.getItem('session_admin');
+      if (session) {
+        const data = JSON.parse(session);
+        return data.email || 'admin@sciars.edu';
+      }
+    } catch {}
+    return 'admin@sciars.edu';
+  }, []);
 
   const isActive = (path) => location.pathname === path;
 
@@ -111,7 +122,7 @@ const NavbarAdmin = () => {
 
           {/* Right side: Bell + Users Dropdown + Logout */}
           <div className="flex items-center gap-3">
-            <NotificationBell userId="admin@sciars.edu" />
+            <AdminNotificationBell />
 
             {/* Users Dropdown */}
             <div className="relative" ref={dropdownRef}>
