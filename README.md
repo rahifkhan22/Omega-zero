@@ -8,13 +8,13 @@ Title of your repository shall be : team-(your team name)
 
 After forking, fill in your team details below in your fork's README
 
-- **Team Name:**
-- **Team Lead:**
+- **Team Name: Omega-zero**
+- **Team Lead: Md Rahif Uddin Khan**
 - **Team Members:**
-  - Member 1:
-  - Member 2:
-  - Member 3:
-  - Member 4:
+  - Member 1: Md Rahif Uddin Khan
+  - Member 2: Rajesh 
+  - Member 3: G.Pranay
+  - Member 4: P.R Rhishabh
 
 ---
 
@@ -46,7 +46,7 @@ git push origin main
 
 ## Problem Statement
 
-[Write your problem statement here]
+Smart Campus Issue Reporting and Management System
 
 ---
 

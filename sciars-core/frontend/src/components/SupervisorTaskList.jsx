@@ -1,26 +1,36 @@
 import IssueCard from "./IssueCard";
+import { updateStatus } from "../services/api";
 
-const SupervisorTaskList = () => {
-  const tasks = [
-    { id: 1, category: "Infrastructure", description: "Large pothole causing traffic hazards near the intersection of Main St and Oak Ave. Multiple complaints from residents.", status: "Open", location: "123 Main St, Downtown" },
-    { id: 2, category: "Utilities", description: "Street light not working for the past week. Area becomes very dark at night causing safety concerns.", status: "In Progress", location: "456 Oak Avenue" },
-    { id: 3, category: "Sanitation", description: "Garbage bins overflowing and waste scattered around the public park entrance.", status: "Open", location: "Central Park, Block 5" },
-    { id: 4, category: "Safety", description: "Broken playground equipment needs immediate attention. Sharp edges exposed.", status: "In Progress", location: "789 Community Center" },
-    { id: 5, category: "Transportation", description: "Traffic signal malfunction causing confusion at the busy intersection.", status: "Resolved", location: "12th Ave & Market St" },
-    { id: 6, category: "Environment", description: "Illegal dumping of construction waste in the vacant lot.", status: "Open", location: "Industrial Zone, Lot 4" },
-  ];
+const SupervisorTaskList = ({ tasks = [], loading = false, onStatusChange }) => {
 
-  const handleStartWork = (taskId) => {
-    console.log(`Starting work on task ${taskId}`);
+  const handleStartWork = async (taskId) => {
+    try {
+      await updateStatus(taskId, { status: "In Progress" });
+      if (onStatusChange) onStatusChange();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleMarkResolved = (taskId) => {
-    console.log(`Marking task ${taskId} as resolved`);
+  const handleMarkResolved = async (taskId) => {
+    try {
+      await updateStatus(taskId, { 
+        status: "Resolved", 
+        proofImageUrl: "https://via.placeholder.com/300?text=Resolved+Proof" 
+      });
+      if (onStatusChange) onStatusChange();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div className="space-y-4">
-      {tasks.map((task) => (
+      {loading ? (
+        <div className="text-center py-12 text-gray-400">Loading tasks...</div>
+      ) : tasks.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">No tasks assigned.</div>
+      ) : tasks.map((task) => (
         <div key={task.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
           <IssueCard
             category={task.category}
@@ -52,7 +62,7 @@ const SupervisorTaskList = () => {
                 Mark Resolved
               </button>
             )}
-            {task.status === "Resolved" && (
+            {(task.status === "Resolved" || task.status === "Closed") && (
               <span className="flex-1 text-center text-sm text-green-600 font-medium py-2">
                 Completed
               </span>

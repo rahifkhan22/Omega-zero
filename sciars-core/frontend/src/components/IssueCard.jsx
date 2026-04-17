@@ -1,4 +1,6 @@
-const IssueCard = ({ category, description, status, location }) => {
+const IssueCard = ({ issue, onClick }) => {
+  const { category, description, status, location } = issue || {};
+  const locationText = location?.text || "Location not specified";
   const statusColors = {
     Open: "bg-red-100 text-red-800 border-red-200",
     "In Progress": "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -33,7 +35,10 @@ const IssueCard = ({ category, description, status, location }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+    <div
+      onClick={onClick}
+      className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md hover:border-primary-300 transition-all cursor-pointer"
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-primary-50 rounded-lg">
@@ -54,7 +59,7 @@ const IssueCard = ({ category, description, status, location }) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        {location}
+        {locationText}
       </div>
     </div>
   );
