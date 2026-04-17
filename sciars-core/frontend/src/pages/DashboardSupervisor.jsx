@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import SupervisorTaskList from "../components/SupervisorTaskList";
 import DashboardCharts from "../components/DashboardCharts";
@@ -7,7 +8,10 @@ import { getIssues } from "../services/api";
 const DashboardSupervisor = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const user = { email: "supervisor1@gmail.com" }; // Mock user
+  const location = useLocation();
+  
+  const savedUser = JSON.parse(localStorage.getItem("session_supervisor") || "{}");
+  const user = savedUser.email ? savedUser : { email: "supervisor1@gmail.com" };
 
   const fetchTasks = async () => {
     try {
@@ -35,6 +39,12 @@ const DashboardSupervisor = () => {
     total: tasks.length,
   };
 
+  const searchParams = new URLSearchParams(location.search);
+  const isResolvedView = searchParams.get("filter") === "resolved";
+  const displayedTasks = isResolvedView 
+    ? tasks.filter(t => t.status === "Resolved" || t.status === "Closed")
+    : tasks;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -46,13 +56,14 @@ const DashboardSupervisor = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+          <div className={isResolvedView ? "lg:col-span-3" : "lg:col-span-2"}>
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">My Tasks</h2>
-              <SupervisorTaskList tasks={tasks} loading={loading} onStatusChange={fetchTasks} />
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">{isResolvedView ? "Resolved Issues" : "My Tasks"}</h2>
+              <SupervisorTaskList tasks={displayedTasks} loading={loading} onStatusChange={fetchTasks} />
             </div>
           </div>
 
+          {!isResolvedView && (
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-24">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Stats</h2>
@@ -104,12 +115,15 @@ const DashboardSupervisor = () => {
               </div>
             </div>
           </div>
+          )}
         </div>
 
+        {!isResolvedView && (
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Analytics</h2>
           <DashboardCharts tasks={tasks} />
         </div>
+        )}
       </div>
     </div>
   );
