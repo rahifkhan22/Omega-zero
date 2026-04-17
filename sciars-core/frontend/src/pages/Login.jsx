@@ -43,6 +43,7 @@ export default function Login() {
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      localStorage.setItem("session_" + selectedRole, JSON.stringify({ email, role: selectedRole }));
       if (selectedRole === "user") navigate("/user");
       else if (selectedRole === "supervisor") navigate("/supervisor");
       else navigate("/admin");

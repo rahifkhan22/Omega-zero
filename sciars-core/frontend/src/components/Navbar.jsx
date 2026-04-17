@@ -20,19 +20,29 @@ const Navbar = () => {
             <Link
               to="/supervisor"
               className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActive('/supervisor')
+                isActive('/supervisor') && !location.search.includes('filter=resolved')
                   ? 'bg-primary-50 text-primary-600'
                   : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
               }`}
             >
               Supervisor Dashboard
             </Link>
+            <Link
+              to="/supervisor?filter=resolved"
+              className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                isActive('/supervisor') && location.search.includes('filter=resolved')
+                  ? 'bg-primary-50 text-primary-600'
+                  : 'text-gray-600 hover:text-primary-600 hover:bg-gray-50'
+              }`}
+            >
+              All Resolved Issues
+            </Link>
           </div>
 
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => navigate('/')}
-              className="p-2 text-gray-500 hover:text-red-600 transition-colors" 
+              className="p-2 text-gray-500 hover:text-red-600 transition-colors"
               aria-label="Logout"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

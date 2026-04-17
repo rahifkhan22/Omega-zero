@@ -12,7 +12,7 @@ const NotificationBell = ({ userId }) => {
 
   const fetchNotifications = async (isBackground = false) => {
     if (!userId) return;
-    
+
     try {
       if (!isBackground) setLoading(true);
       if (!isBackground) setError(null);
