@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import NavbarUser from "../components/NavbarUser";
 import CameraCapture from "../components/CameraCapture";
+import MapView from "../components/MapView";
 import { createIssue } from "../services/api";
 
 const mapCategory = (cat) => {
@@ -50,7 +51,12 @@ export default function ReportIssue() {
   const [imagePreview, setImagePreview] = useState(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsStatus, setGpsStatus] = useState(null);
-  const [showCamera, setShowCamera] = useState(false);
+  const [gpsAccuracy, setGpsAccuracy] = useState(null);
+const [showCamera, setShowCamera] = useState(false);
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [tempLocation, setTempLocation] = useState(null);
+  const [tempAccuracy, setTempAccuracy] = useState(null);
+  const watchIdRef = useRef(null);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -69,19 +75,83 @@ export default function ReportIssue() {
     }
     setGpsLoading(true);
     setGpsStatus(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setFormData((prev) => ({ ...prev, lat: latitude, lng: longitude }));
+    setTempLocation(null);
+    setTempAccuracy(null);
+
+    let bestPosition = null;
+    let bestAccuracy = Infinity;
+    const maxSamples = 5;
+    let sampleCount = 0;
+
+    const updatePosition = (position) => {
+      const { latitude, longitude, accuracy } = position.coords;
+      sampleCount++;
+      
+      if (accuracy < bestAccuracy) {
+        bestAccuracy = accuracy;
+        bestPosition = { lat: latitude, lng: longitude };
+      }
+
+      setTempAccuracy(accuracy);
+
+      if (sampleCount >= maxSamples) {
+        finishGPS(bestPosition, bestAccuracy);
+      }
+    };
+
+    const finishGPS = (position, accuracy) => {
+      if (watchIdRef.current) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+
+      if (position) {
+        setTempLocation([position.lat, position.lng]);
+        setTempAccuracy(accuracy);
         setGpsLoading(false);
-        setGpsStatus("success");
-      },
-      () => {
-        setGpsLoading(false);
+        setShowMapModal(true);
+      } else {
         setGpsStatus("error");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+        setGpsLoading(false);
+      }
+    };
+
+    const startWatching = () => {
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        updatePosition,
+        (error) => {
+          console.error("GPS error:", error);
+          if (sampleCount > 0) {
+            finishGPS(bestPosition, bestAccuracy);
+          } else {
+            finishGPS(null, null);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+
+      setTimeout(() => {
+        if (watchIdRef.current && sampleCount < maxSamples) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+          watchIdRef.current = null;
+          finishGPS(bestPosition, bestAccuracy);
+        }
+      }, 8000);
+    };
+
+    startWatching();
+  };
+
+  const handleLocationConfirm = () => {
+    if (tempLocation) {
+      setFormData((prev) => ({ 
+        ...prev, 
+        lat: tempLocation[0], 
+        lng: tempLocation[1] 
+      }));
+      setGpsStatus("success");
+      setShowMapModal(false);
+    }
   };
 
   const validateForm = () => {
@@ -91,6 +161,7 @@ export default function ReportIssue() {
     if (!formData.category) newErrors.category = "Please select a category";
     if (!formData.college) newErrors.location = "Please select a college";
     if (!formData.locationText.trim()) newErrors.location = "Location description is required";
+    if (!formData.image) newErrors.image = "Image is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -341,10 +412,10 @@ export default function ReportIssue() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Image (Optional)
+                Upload Image <span className="text-red-500">*</span>
               </label>
               <div className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                imagePreview ? "border-primary-300 bg-primary-50" : "border-gray-300 hover:border-gray-400"
+                imagePreview ? "border-primary-300 bg-primary-50" : errors.image ? "border-red-400 bg-red-50" : "border-gray-300 hover:border-gray-400"
               }`}>
                 {imagePreview ? (
                   <div className="relative inline-block z-10">
@@ -391,6 +462,7 @@ export default function ReportIssue() {
                   Take Photo
                 </button>
               )}
+              {errors.image && <p className="mt-2 text-sm text-red-500">{errors.image}</p>}
             </div>
             <CameraCapture
               isOpen={showCamera}
@@ -451,6 +523,71 @@ export default function ReportIssue() {
           </div>
         </div>
       </div>
+
+      {/* Location Map Modal */}
+      {showMapModal && tempLocation && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70"
+          onClick={() => setShowMapModal(false)}
+        >
+          <div 
+            className="relative max-w-2xl w-full bg-white rounded-xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Confirm Location</h3>
+                  <p className="text-sm text-gray-500">Drag the pin or click on map to adjust location</p>
+                </div>
+                <button
+                  onClick={() => setShowMapModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {tempAccuracy && (
+                <p className="text-xs text-gray-500 mt-1">GPS Accuracy: ±{Math.round(tempAccuracy)}m</p>
+              )}
+            </div>
+            
+            <div className="p-4">
+              <MapView 
+                singleLocation={tempLocation}
+                onLocationChange={(newPos) => setTempLocation(newPos)}
+                center={tempLocation}
+                zoom={18}
+                className="h-[50vh]"
+              />
+            </div>
+
+            <div className="p-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+              <p className="text-sm text-gray-600">
+                Selected: {tempLocation[0].toFixed(5)}, {tempLocation[1].toFixed(5)}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowMapModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLocationConfirm}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium"
+                >
+                  Confirm Location
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
