@@ -1,76 +1,68 @@
-# Hackathon — [DEV ARENA]
+# SCIARS - Smart City Issue and Resolution System
 
-Welcome to the official hackathon repository by [GDG,UCE-OU].
-This repository serves as the starting point for all participating teams.
-Title of your repository shall be : team-(your team name)
+A full-stack web application for reporting, tracking, and resolving civic issues using geolocation, role-based dashboards, and real-time notifications.
 
-## Team Details
+## 🏗️ Tech Stack
 
-After forking, fill in your team details below in your fork's README
+### Frontend
+- **React** (with Vite)
+- **Tailwind CSS** for styling
+- **Leaflet** for interactive maps
+- **Recharts** for analytics dashboards
+- **Firebase** for authentication & file storage
 
-- **Team Name: Omega-zero**
-- **Team Lead: Md Rahif Uddin Khan**
-- **Team Members:**
-  - Member 1: Md Rahif Uddin Khan
-  - Member 2: Rajesh 
-  - Member 3: G.Pranay
-  - Member 4: P.R Rhishabh
+### Backend
+- **FastAPI** (Python)
+- **Firebase Admin SDK** for server-side operations
+- **Haversine** formula for duplicate issue detection
+- **SMTP / Nodemailer** for email notifications
 
----
+## 🚀 Getting Started
 
+### Prerequisites
+- Node.js >= 18
+- Python >= 3.10
+- Firebase project with Firestore & Auth enabled
 
-## Getting Started
-
-### Step 1 — Fork this Repository
-- Click the **Fork** button at the top right of this page
-- Select your GitHub account to fork into
-- You will be redirected to your own copy of this repository
-
-### Step 2 — Clone your Fork Locally
+### Frontend Setup
 ```bash
-git clone https://github.com/your-username/hackathon-repo
-cd hackathon-repo
+cd frontend
+npm install
+npm run dev
 ```
 
-### Step 3 — Start Building
-- Work on your project inside your forked repository
-- Commit and push your changes regularly
-
+### Backend Setup
 ```bash
-git add .
-git commit -m "Your commit message"
-git push origin main
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --reload
 ```
 
----
+## 📁 Project Structure
 
-## Problem Statement
+```
+sciars-core/
+├── frontend/          # React + Vite + Tailwind
+│   └── src/
+│       ├── components/   # Reusable UI (IssueCard, MapView, Navbar)
+│       ├── pages/        # Role-based dashboards & views
+│       └── services/     # API & Firebase client config
+│
+└── backend/           # FastAPI + Python
+    ├── routers/          # API endpoints
+    ├── services/         # Core business logic
+    └── models/           # Pydantic schemas
+```
 
-Smart Campus Issue Reporting and Management System
+## 👥 Team Roles
 
----
+| Role | Responsibility |
+|------|---------------|
+| Frontend Dev | React UI, Tailwind styling, Leaflet maps |
+| Backend Dev | FastAPI routes, Firebase integration |
+| Full Stack | API integration, authentication flow |
+| DevOps | Deployment, CI/CD, environment config |
 
-## Submission Guidelines
+## 📄 License
 
-- All code must be pushed to your **forked repository**
-- Your repository must be **public**
-- **Submission Deadline:** [17th april 3:59pm]
-
----
-
-## 📋 Rules & Regulations
-
-- Use of AI is permitted
-- Use of open source libraries is permitted
-- Plagiarism will lead to immediate disqualification
-- The decision of the judges will be final
-
----
-## Contact
-
-For any queries, reach out to us at:
-- **contact number** : [7981972900]
-
----
-
-> Good luck to all participating teams! 
+This project is for educational purposes.
