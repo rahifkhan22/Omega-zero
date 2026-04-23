@@ -500,7 +500,7 @@ export default function DashboardUser() {
                 issues={[ { 
                   id: 'selected', 
                   location: { lat: locationModal.lat, lng: locationModal.lng, text: locationModal.text },
-                  status: 'Open'
+                  status: selectedIssue.status
                 }]} 
                 center={[locationModal.lat, locationModal.lng]}
                 zoom={17}
